@@ -1,8 +1,0 @@
-; Any value here can be overridden by an environment variable or .env file:
-; DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
-[mysql]
-host = localhost
-port = 3306
-user = wms_dev
-password = your_password
-database = billy

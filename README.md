@@ -11,20 +11,15 @@ copy .env.example .env      (then put in YOUR MySQL user/password/database)
 ```
 
 Your MySQL user needs CREATE, DROP, INSERT and SELECT on the target database.
-`.env` and `config.ini` hold your own credentials and are git-ignored; only the
-`.example` files are shared.
+`.env` holds your own credentials and is git-ignored; only `.env.example` is shared.
 
 The created tables are normal InnoDB tables (not TEMPORARY, no views/triggers/
 DEFINER), so they don't depend on who created them or on the session. Any user
 with SELECT on the database can read them after the import finishes.
 
-DB settings are read in this order (first one found wins):
-
-1. Environment variables `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
-2. `.env` file next to the script (see `.env.example`)
-3. `config.ini` `[mysql]` section
-
-Example: `set DB_NAME=billy_test` then run the import to target another database.
+DB settings (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`) are read
+from `.env` next to the script. A real environment variable with the same name
+overrides `.env` (useful for CI/servers).
 The database is created automatically if it does not exist (needs CREATE privilege).
 
 ## Usage

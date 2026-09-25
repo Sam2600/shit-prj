@@ -7,7 +7,6 @@ Usage:
 """
 
 import argparse
-import configparser
 import csv
 import datetime
 import os
@@ -23,7 +22,6 @@ MAX_COLUMNS = (65535 - 4) // (VARCHAR_LEN * 4 + 2)
 ROW_COLUMN = "Row"
 CHARSET = "utf8mb4"
 COLLATION = "utf8mb4_unicode_ci"
-CONFIG_FILE = Path(__file__).with_name("config.ini")
 ENV_FILE = Path(__file__).with_name(".env")
 
 
@@ -161,30 +159,25 @@ def read_env_file():
 
 
 def load_config():
-    """Each setting: environment variable > .env file > config.ini > default."""
-    ini = configparser.ConfigParser()
-    ini.read(CONFIG_FILE, encoding="utf-8")
-    section = ini["mysql"] if ini.has_section("mysql") else {}
+    """Each setting: environment variable > .env file > default."""
     env_file = read_env_file()
 
-    def get(key, env_key, default=None):
+    def get(env_key, default=None):
         for source in (os.environ, env_file):
             if source.get(env_key):
                 return source[env_key]
-        return section.get(key, default)
+        return default
 
     cfg = {
-        "host": get("host", "DB_HOST", "localhost"),
-        "port": int(get("port", "DB_PORT", 3306)),
-        "user": get("user", "DB_USER"),
-        "password": get("password", "DB_PASSWORD", ""),
-        "database": get("database", "DB_NAME"),
+        "host": get("DB_HOST", "localhost"),
+        "port": int(get("DB_PORT", 3306)),
+        "user": get("DB_USER"),
+        "password": get("DB_PASSWORD", ""),
+        "database": get("DB_NAME"),
     }
     for key, env_key in (("database", "DB_NAME"), ("user", "DB_USER")):
         if not cfg[key]:
-            raise ImportError_(
-                f"{key} not set. Set {env_key} in .env or {key} in config.ini "
-                f"(copy .env.example or config.ini.example).")
+            raise ImportError_(f"{env_key} not set. Copy .env.example to .env and fill it in.")
     return cfg
 
 
