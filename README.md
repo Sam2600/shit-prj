@@ -25,7 +25,7 @@ DB settings are read in this order (first one found wins):
 3. `config.ini` `[mysql]` section
 
 Example: `set DB_NAME=billy_test` then run the import to target another database.
-The database must already exist.
+The database is created automatically if it does not exist (needs CREATE privilege).
 
 ## Usage
 

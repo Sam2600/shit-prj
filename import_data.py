@@ -193,12 +193,15 @@ def write_to_mysql(cfg, table, columns, data, create_sql):
 
     conn = mysql.connector.connect(
         host=cfg["host"], port=cfg["port"], user=cfg["user"],
-        password=cfg["password"], database=cfg["database"],
+        password=cfg["password"],
         charset=CHARSET, collation=COLLATION, autocommit=False,
     )
     full_name = f"{quote_ident(cfg['database'])}.{quote_ident(table)}"
     try:
         cur = conn.cursor()
+        cur.execute(
+            f"CREATE DATABASE IF NOT EXISTS {quote_ident(cfg['database'])} "
+            f"CHARACTER SET {CHARSET} COLLATE {COLLATION}")
         cur.execute(f"DROP TABLE IF EXISTS {full_name}")
         cur.execute(create_sql)
         insert_sql = (
