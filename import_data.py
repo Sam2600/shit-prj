@@ -98,13 +98,33 @@ def table_name_from_param(param):
     return name
 
 
+def build_columns(header, width):
+    """Use the header text as column names. Blank headers become col_N;
+    duplicates (and a header named Row) get _2, _3, ... (case-insensitive)."""
+    used = {ROW_COLUMN.lower()}
+    columns = []
+    for i in range(width):
+        raw = header[i] if i < len(header) else None
+        base = (raw or f"col_{i + 1}").replace("\n", " ").strip()[:MAX_IDENTIFIER_LEN]
+        name, n = base, 2
+        while name.lower() in used:
+            suffix = f"_{n}"
+            name = base[:MAX_IDENTIFIER_LEN - len(suffix)] + suffix
+            n += 1
+        used.add(name.lower())
+        columns.append(name)
+    return columns
+
+
 def prepare(rows):
-    """Return (columns, data_rows). Every non-empty row is data (no header row);
-    columns are named col_1..col_N and rows are padded to the widest row."""
+    """Return (columns, data_rows). The first non-empty row is the header;
+    the rest is data, with empty rows removed and rows padded to width."""
     # Keep (source row number, row) so errors can point at the right line.
     numbered = [(i + 1, r) for i, r in enumerate(rows) if any(v is not None for v in r)]
     if not numbered:
         raise ImportError_("File is empty.")
+    _, header = numbered[0]
+    body = numbered[1:]
 
     def last_filled(row):
         return max((i + 1 for i, v in enumerate(row) if v is not None), default=0)
@@ -115,9 +135,9 @@ def prepare(rows):
             f"File has {width} columns; VARCHAR({VARCHAR_LEN}) allows at most "
             f"{MAX_COLUMNS} per MySQL row.")
 
-    columns = [f"col_{i + 1}" for i in range(width)]
+    columns = build_columns(header, width)
     data = []
-    for line_no, row in numbered:
+    for line_no, row in body:
         row = (list(row) + [None] * width)[:width]
         for col, value in zip(columns, row):
             if value is not None and len(value) > VARCHAR_LEN:

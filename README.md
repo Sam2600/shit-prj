@@ -1,7 +1,7 @@
 # Excel/CSV → MySQL importer
 
-Reads an `.xlsx` or `.csv` file and creates `billy.{parameter}_tbl` with an
-auto-increment `Row` column plus `col_1`, `col_2`, ... (`VARCHAR(512)`) — one per file column.
+Reads an `.xlsx` or `.csv` file and creates `{DB_NAME}.{parameter}_tbl` with an
+auto-increment `Row` column plus one `VARCHAR(512)` column per header column.
 
 ## Setup (one time, per developer)
 
@@ -35,7 +35,8 @@ python import_data.py Sample.xlsx "store master" --dry-run   (show SQL only)
 ## Rules
 
 - Parameter → table name: lowercase, non-alphanumerics become `_`, `_tbl` appended.
-- There is no header row: every non-empty row in the file is inserted as data.
+- Row 1 is the header: its values become the column names. Rows 2+ are inserted as data.
+- Blank headers become `col_N`; duplicate headers (and a header named `Row`) get `_2`, `_3`, ...
 - If the table already exists it is dropped and recreated.
 - Blank cells are stored as NULL; fully empty rows are skipped.
 - Excel: first sheet unless `--sheet` is given. Formulas import their last calculated value.
