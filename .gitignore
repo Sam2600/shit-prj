@@ -1,0 +1,4 @@
+# Each developer keeps their own DB credentials locally
+.env
+config.ini
+__pycache__/
